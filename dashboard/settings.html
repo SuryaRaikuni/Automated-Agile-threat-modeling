@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Settings - ThreatLoop</title>
+  <link rel="stylesheet" href="./assets/theme.css">
+</head>
+<body>
+  <div class="layout">
+    <div class="sidebar">
+      <div class="logo">ThreatLoop</div>
+      <nav>
+        <a href="index.html">Dashboard</a>
+        <a href="dfd-viewer.html">DFD Viewer</a>
+        <a href="backlog.html">Backlog Sync</a>
+        <a href="pipeline-runs.html">Pipeline Runs</a>
+        <a href="settings.html" class="active">Settings</a>
+      </nav>
+    </div>
+    <div class="main-wrapper">
+      <div class="topbar" id="shared-topbar"></div>
+      <div class="main-content">
+        <h2 style="margin-bottom: 24px;">Settings</h2>
+        
+        <div class="grid-cols-2">
+          <div class="card">
+            <h3 style="margin-bottom: 16px;">STRIDE Rule Configuration</h3>
+            <p style="color:var(--muted); margin-bottom: 24px; font-size:0.9rem;">Toggle which threat categories are evaluated during pipeline scans.</p>
+            
+            <div id="stride-toggles" style="display:flex; flex-direction:column; gap:16px;">
+              <!-- Filled by JS -->
+            </div>
+          </div>
+          
+          <div style="display:flex; flex-direction:column; gap:24px;">
+            <div class="card">
+              <h3 style="margin-bottom: 16px;">GitHub Integration</h3>
+              <div style="display:flex; flex-direction:column; gap:12px;">
+                <div style="display:flex; align-items:center; justify-content:space-between;">
+                  <span>Repository URL</span>
+                  <a href="https://github.com/SuryaRaikuni/Automated-Agile-threat-modeling" target="_blank" class="mono" style="font-size:0.85rem;">SuryaRaikuni/...</a>
+                </div>
+                <div style="display:flex; align-items:center; justify-content:space-between;">
+                  <span>Status</span>
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <div style="width:10px; height:10px; border-radius:50%; background:var(--low);"></div>
+                    <span style="color:var(--low); font-weight:bold; font-size:0.85rem;">CONNECTED</span>
+                  </div>
+                </div>
+                <div style="display:flex; align-items:center; justify-content:space-between;">
+                  <span>Last Connected</span>
+                  <span style="font-size:0.85rem; color:var(--muted);" id="github-last-connected">Never</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <h3 style="margin-bottom: 16px;">Notifications</h3>
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+                <div>
+                  <div style="font-weight:bold;">Email on new Critical threat</div>
+                  <div style="font-size:0.85rem; color:var(--muted); margin-top:4px;">Send an email when a CRITICAL threat is found.</div>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="notify-critical">
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div style="display:flex; align-items:center; justify-content:space-between;">
+                <div>
+                  <div style="font-weight:bold;">Email on pipeline failure</div>
+                  <div style="font-size:0.85rem; color:var(--muted); margin-top:4px;">Send an email when the ThreatLoop pipeline fails.</div>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="notify-failure">
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="./assets/app.js"></script>
+  <script>
+    document.addEventListener('tl-data-ready', () => {
+      window.renderSharedTopbar();
+      
+      if (window.TLData.runs.length > 0) {
+        document.getElementById('github-last-connected').textContent = window.formatDate(window.TLData.runs[0].timestamp);
+      }
+
+      const categories = [
+        { id: 'SPOOFING', desc: 'Detects missing authentication and identity forgery risks.' },
+        { id: 'TAMPERING', desc: 'Detects unauthorized data modification and missing integrity checks.' },
+        { id: 'REPUDIATION', desc: 'Detects lack of audit logging and non-repudiation controls.' },
+        { id: 'INFO_DISCLOSURE', desc: 'Detects unencrypted data at rest and in transit.' },
+        { id: 'DENIAL_OF_SERVICE', desc: 'Detects missing rate limiting and resource exhaustion vectors.' },
+        { id: 'ELEVATION_OF_PRIVILEGE', desc: 'Detects broken authorization and privilege escalation risks.' }
+      ];
+
+      const disabledCats = JSON.parse(localStorage.getItem('tl_disabled_categories') || '[]');
+
+      const toggleContainer = document.getElementById('stride-toggles');
+      toggleContainer.innerHTML = categories.map(c => {
+        const isChecked = !disabledCats.includes(c.id);
+        return `
+          <div style="display:flex; align-items:center; justify-content:space-between;">
+            <div>
+              <div style="font-weight:bold;">${window.formatCategory(c.id)}</div>
+              <div style="font-size:0.85rem; color:var(--muted); margin-top:4px;">${c.desc}</div>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleCategory('${c.id}', this.checked)">
+              <span class="slider"></span>
+            </label>
+          </div>
+        `;
+      }).join('');
+
+      window.toggleCategory = function(cat, enabled) {
+        let disabled = JSON.parse(localStorage.getItem('tl_disabled_categories') || '[]');
+        if(enabled) {
+          disabled = disabled.filter(d => d !== cat);
+        } else {
+          if(!disabled.includes(cat)) disabled.push(cat);
+        }
+        localStorage.setItem('tl_disabled_categories', JSON.stringify(disabled));
+      };
+
+      ['notify-critical', 'notify-failure'].forEach(id => {
+        const el = document.getElementById(id);
+        el.checked = localStorage.getItem('tl_' + id) === 'true';
+        el.addEventListener('change', (e) => {
+          localStorage.setItem('tl_' + id, e.target.checked);
+        });
+      });
+    });
+  </script>
+</body>
+</html>

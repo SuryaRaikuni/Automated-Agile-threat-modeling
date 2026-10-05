@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>DFD Viewer - ThreatLoop</title>
+  <link rel="stylesheet" href="./assets/theme.css">
+  <style>
+    .dfd-layout { display: flex; gap: 24px; height: calc(100vh - 120px); }
+    .dfd-canvas-wrapper { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: 8px; position: relative; overflow: hidden; display: flex; flex-direction: column; }
+    .dfd-panel { width: 280px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 16px; overflow-y: auto; }
+    #dfd-svg { width: 100%; height: 100%; }
+    .legend { padding: 16px; border-top: 1px solid var(--border); display: flex; gap: 16px; font-size: 0.85rem; flex-wrap: wrap; }
+    .legend-item { display: flex; align-items: center; gap: 8px; }
+    .color-box { width: 12px; height: 12px; border-radius: 2px; }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <div class="sidebar">
+      <div class="logo">ThreatLoop</div>
+      <nav>
+        <a href="index.html">Dashboard</a>
+        <a href="dfd-viewer.html" class="active">DFD Viewer</a>
+        <a href="backlog.html">Backlog Sync</a>
+        <a href="pipeline-runs.html">Pipeline Runs</a>
+        <a href="settings.html">Settings</a>
+      </nav>
+    </div>
+    <div class="main-wrapper">
+      <div class="topbar" id="shared-topbar"></div>
+      <div class="main-content">
+        <h2 style="margin-bottom: 24px;">DFD Viewer</h2>
+        <div class="dfd-layout">
+          <div class="dfd-canvas-wrapper">
+            <svg id="dfd-svg"></svg>
+            <div class="legend">
+              <div class="legend-item"><div class="color-box" style="background:var(--critical)"></div>Critical</div>
+              <div class="legend-item"><div class="color-box" style="background:var(--high)"></div>High</div>
+              <div class="legend-item"><div class="color-box" style="background:var(--medium)"></div>Medium</div>
+              <div class="legend-item"><div class="color-box" style="background:var(--low)"></div>Low</div>
+              <div class="legend-item"><div class="color-box" style="background:var(--info)"></div>Info/None</div>
+            </div>
+          </div>
+          <div class="dfd-panel">
+            <h3>Flagged Elements</h3>
+            <div id="flagged-elements" style="margin-top: 16px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="./assets/app.js"></script>
+  <script>
+    document.addEventListener('tl-data-ready', () => {
+      window.renderSharedTopbar();
+      const threats = window.TLData.threats;
+      
+      const elementsMap = {};
+      threats.forEach(t => {
+        if(!t.affectedElementId) return;
+        const id = t.affectedElementId;
+        if(!elementsMap[id]) {
+          elementsMap[id] = { id, threatCount: 0, severityValue: -1, color: 'var(--info)' };
+        }
+        elementsMap[id].threatCount++;
+        
+        let sVal = 0;
+        const s = t.severity.toUpperCase();
+        if(s==='CRITICAL') sVal=4;
+        else if(s==='HIGH') sVal=3;
+        else if(s==='MEDIUM') sVal=2;
+        else if(s==='LOW') sVal=1;
+        
+        if(sVal > elementsMap[id].severityValue) {
+          elementsMap[id].severityValue = sVal;
+          elementsMap[id].color = window.getSeverityColor(s);
+        }
+      });
+
+      const elements = Object.values(elementsMap);
+      
+      // Render panel
+      const panel = document.getElementById('flagged-elements');
+      if(elements.length === 0) {
+        panel.innerHTML = '<p class="muted">No elements flagged.</p>';
+      } else {
+        panel.innerHTML = elements.sort((a,b)=>b.severityValue - a.severityValue).map(el => `
+          <div style="padding: 12px; border: 1px solid var(--border); border-radius: 4px; margin-bottom: 8px; border-left: 4px solid ${el.color};">
+            <div class="mono" style="font-weight:bold; margin-bottom:4px;">${window.escapeHtml(el.id)}</div>
+            <div style="font-size: 0.85rem; color: var(--muted);">${el.threatCount} threat(s)</div>
+          </div>
+        `).join('');
+      }
+
+      // Render SVG (simple force-grid)
+      const svg = document.getElementById('dfd-svg');
+      const w = svg.clientWidth || 600;
+      const h = (svg.clientHeight || 400) - 50;
+      
+      let svgHtml = '';
+      const cols = Math.ceil(Math.sqrt(elements.length)) || 1;
+      const xStep = w / (cols + 1);
+      const yStep = h / (cols + 1);
+      
+      elements.forEach((el, i) => {
+        const col = i % cols;
+        const row = Math.floor(i / cols);
+        const cx = xStep * (col + 1);
+        const cy = yStep * (row + 1);
+        
+        // Just draw processes as circles for all since we don't have exact type data
+        // For checkoutcontroller, process
+        // For orderrepository, datastore
+        // For paymentgateway, external entity
+        let shape = '';
+        const idLower = el.id.toLowerCase();
+        
+        if(idLower.includes('repository') || idLower.includes('db')) {
+          // Data store
+          shape = `<path d="M${cx-50},${cy-20} L${cx+50},${cy-20} M${cx-50},${cy+20} L${cx+50},${cy+20}" stroke="${el.color}" stroke-width="3" fill="none"/>`;
+        } else if (idLower.includes('gateway') || idLower.includes('external')) {
+          // External entity
+          shape = `<rect x="${cx-50}" y="${cy-25}" width="100" height="50" rx="4" stroke="${el.color}" stroke-width="3" fill="var(--bg)"/>`;
+        } else {
+          // Process
+          shape = `<circle cx="${cx}" cy="${cy}" r="35" stroke="${el.color}" stroke-width="3" fill="var(--bg)"/>`;
+        }
+        
+        svgHtml += `
+          ${shape}
+          <text x="${cx}" y="${cy+5}" text-anchor="middle" fill="var(--text)" font-size="12" font-family="monospace">${window.escapeHtml(el.id)}</text>
+        `;
+      });
+      
+      // Draw some arbitrary arrows based on sequence just for show
+      for(let i=0; i<elements.length-1; i++) {
+        const el1 = elements[i];
+        const el2 = elements[i+1];
+        const col1 = i % cols, row1 = Math.floor(i / cols);
+        const col2 = (i+1) % cols, row2 = Math.floor((i+1) / cols);
+        const cx1 = xStep * (col1 + 1), cy1 = yStep * (row1 + 1);
+        const cx2 = xStep * (col2 + 1), cy2 = yStep * (row2 + 1);
+        svgHtml += `
+          <line x1="${cx1+20}" y1="${cy1+20}" x2="${cx2-20}" y2="${cy2-20}" stroke="var(--border)" stroke-width="2" marker-end="url(#arrow)"/>
+        `;
+      }
+      
+      svg.innerHTML = `
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--border)" />
+          </marker>
+        </defs>
+        ${svgHtml}
+      `;
+    });
+  </script>
+</body>
+</html>

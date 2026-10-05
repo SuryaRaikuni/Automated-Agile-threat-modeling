@@ -1,0 +1,60 @@
+{
+  "generatedAt": "2026-09-17T17:45:00Z",
+  "threats": [
+    {
+      "id": "a1b2c3d4",
+      "category": "SPOOFING",
+      "severity": "HIGH",
+      "title": "Missing Authentication on PaymentGateway",
+      "description": "The PaymentGateway external entity lacks authentication controls, enabling spoofing attacks.",
+      "mitigation": "Implement mutual TLS or token-based authentication on all payment gateway interactions.",
+      "affectedElementId": "paymentgateway",
+      "runId": "run-001",
+      "status": "OPEN"
+    },
+    {
+      "id": "b2c3d4e5",
+      "category": "INFO_DISCLOSURE",
+      "severity": "CRITICAL",
+      "title": "Sensitive Data Store Not Encrypted at Rest: OrderRepository",
+      "description": "The OrderRepository data store contains PII and order data without encryption at rest.",
+      "mitigation": "Enable AES-256 encryption at rest for the OrderRepository data store.",
+      "affectedElementId": "orderrepository",
+      "runId": "run-001",
+      "status": "OPEN"
+    },
+    {
+      "id": "c3d4e5f6",
+      "category": "TAMPERING",
+      "severity": "HIGH",
+      "title": "Unencrypted Data Flow from CheckoutController",
+      "description": "Data flow from CheckoutController to OrderRepository is not encrypted in transit.",
+      "mitigation": "Enforce TLS 1.2+ on all internal service communication.",
+      "affectedElementId": "checkoutcontroller",
+      "runId": "run-001",
+      "status": "OPEN"
+    },
+    {
+      "id": "d4e5f6a7",
+      "category": "DENIAL_OF_SERVICE",
+      "severity": "MEDIUM",
+      "title": "No Rate Limiting on CheckoutController",
+      "description": "The CheckoutController process is exposed to external entities without rate limiting.",
+      "mitigation": "Implement rate limiting (e.g. 100 req/min) and circuit breakers.",
+      "affectedElementId": "checkoutcontroller",
+      "runId": "run-001",
+      "status": "MITIGATED"
+    },
+    {
+      "id": "e5f6a7b8",
+      "category": "REPUDIATION",
+      "severity": "MEDIUM",
+      "title": "Missing Audit Logging in CheckoutController",
+      "description": "CheckoutController does not implement structured audit logging for order operations.",
+      "mitigation": "Add structured audit logs for all state-changing operations with user ID and timestamp.",
+      "affectedElementId": "checkoutcontroller",
+      "runId": "run-001",
+      "status": "OPEN"
+    }
+  ]
+}

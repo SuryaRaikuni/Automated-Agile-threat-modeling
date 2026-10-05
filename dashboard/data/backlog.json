@@ -1,0 +1,22 @@
+{
+  "tickets": [
+    {
+      "threatId": "a1b2c3d4",
+      "issueNumber": "1",
+      "issueUrl": "https://github.com/SuryaRaikuni/Automated-Agile-threat-modeling/issues/1",
+      "status": "OPEN"
+    },
+    {
+      "threatId": "b2c3d4e5",
+      "issueNumber": "2",
+      "issueUrl": "https://github.com/SuryaRaikuni/Automated-Agile-threat-modeling/issues/2",
+      "status": "OPEN"
+    },
+    {
+      "threatId": "c3d4e5f6",
+      "issueNumber": "3",
+      "issueUrl": "https://github.com/SuryaRaikuni/Automated-Agile-threat-modeling/issues/3",
+      "status": "OPEN"
+    }
+  ]
+}

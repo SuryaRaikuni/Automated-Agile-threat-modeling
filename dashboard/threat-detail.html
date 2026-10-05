@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Threat Detail - ThreatLoop</title>
+  <link rel="stylesheet" href="./assets/theme.css">
+</head>
+<body>
+  <div class="layout">
+    <div class="sidebar">
+      <div class="logo">ThreatLoop</div>
+      <nav>
+        <a href="index.html">Dashboard</a>
+        <a href="dfd-viewer.html">DFD Viewer</a>
+        <a href="backlog.html">Backlog Sync</a>
+        <a href="pipeline-runs.html">Pipeline Runs</a>
+        <a href="settings.html">Settings</a>
+      </nav>
+    </div>
+    <div class="main-wrapper">
+      <div class="topbar" id="shared-topbar"></div>
+      <div class="main-content" id="detail-content">
+        <!-- Content filled by JS -->
+      </div>
+    </div>
+  </div>
+  <script src="./assets/app.js"></script>
+  <script>
+    document.addEventListener('tl-data-ready', () => {
+      window.renderSharedTopbar();
+      const id = window.getQueryParam('id');
+      const threat = window.TLData.threats.find(t => t.id === id);
+      const content = document.getElementById('detail-content');
+      
+      if(!threat) {
+        content.innerHTML = '<h2>Threat not found</h2><a href="index.html">Back to dashboard</a>';
+        return;
+      }
+      
+      const localStatus = localStorage.getItem('tl_status_' + id);
+      if(localStatus) threat.status = localStatus;
+
+      const ticket = window.TLData.tickets.find(t => t.threatId === id);
+      
+      const render = () => {
+        content.innerHTML = `
+          <div style="margin-bottom: 24px;">
+            <a href="index.html" style="color:var(--muted); text-decoration:none;">&larr; Back to Dashboard</a>
+          </div>
+          <div class="card" style="margin-bottom: 24px;">
+            <div style="display:flex; gap:12px; margin-bottom: 12px; align-items:center;">
+              ${window.formatSeverity(threat.severity)}
+              <span class="badge badge-info">${window.formatCategory(threat.category)}</span>
+              ${window.formatStatus(threat.status)}
+            </div>
+            <h2>${window.escapeHtml(threat.title)}</h2>
+          </div>
+          <div class="grid-cols-2">
+            <div class="card">
+              <h3>Description</h3>
+              <p style="margin-top:12px; line-height:1.5;">${window.escapeHtml(threat.description)}</p>
+            </div>
+            <div class="card">
+              <h3>Mitigation</h3>
+              <p style="margin-top:12px; line-height:1.5;">${window.escapeHtml(threat.mitigation)}</p>
+            </div>
+            <div class="card">
+              <h3>Details</h3>
+              <p style="margin-top:12px;"><strong>Affected Element:</strong> <span class="mono">${window.escapeHtml(threat.affectedElementId)}</span></p>
+              <p style="margin-top:12px;"><strong>Run ID:</strong> <span class="mono">${window.escapeHtml(threat.runId)}</span></p>
+              <p style="margin-top:12px;"><strong>GitHub Issue:</strong> ${ticket ? `<a href="${ticket.issueUrl}" target="_blank" style="color:var(--info);">#${ticket.issueNumber}</a>` : 'No ticket filed'}</p>
+            </div>
+            <div class="card">
+              <h3>Actions</h3>
+              <div style="display:flex; gap:12px; margin-top:12px; flex-wrap:wrap;">
+                <button class="btn btn-primary" onclick="updateStatus('MITIGATED')">Mark Mitigated</button>
+                <button class="btn btn-danger" onclick="updateStatus('FALSE POSITIVE')">Mark False Positive</button>
+                <a href="dfd-viewer.html" class="btn btn-ghost" style="text-decoration:none; display:inline-block; padding: 6px 14px;">View in DFD</a>
+              </div>
+              <p style="margin-top:12px; font-size:0.8rem; color:var(--muted);">Note: Status changes are stored locally until the next pipeline run.</p>
+            </div>
+          </div>
+        `;
+      };
+      
+      window.updateStatus = function(newStatus) {
+        localStorage.setItem('tl_status_' + id, newStatus);
+        threat.status = newStatus;
+        render();
+      };
+      
+      render();
+    });
+  </script>
+</body>
+</html>

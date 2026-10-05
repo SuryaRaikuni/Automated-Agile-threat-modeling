@@ -1,0 +1,13 @@
+{
+  "runs": [
+    {
+      "runId": "run-001",
+      "sha": "a1b2c3d",
+      "branch": "main",
+      "timestamp": "2026-09-17T17:45:00Z",
+      "durationMs": 45320,
+      "newThreatCount": 5,
+      "status": "SUCCESS"
+    }
+  ]
+}

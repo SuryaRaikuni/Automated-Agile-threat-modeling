@@ -1,0 +1,70 @@
+name: ThreatLoop — Threat Scan
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: ['**']
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  threat-scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository (full history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build pipeline fat JAR
+        run: mvn -f pipeline/pom.xml package -q -DskipTests
+
+      - name: Run ThreatLoop pipeline
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          REPO="$GITHUB_REPOSITORY"
+          SHA="$GITHUB_SHA"
+          BRANCH="${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}"
+          RUN_ID="run-$GITHUB_RUN_NUMBER"
+
+          java -jar pipeline/target/threatloop-pipeline-1.0-SNAPSHOT-jar-with-dependencies.jar \
+            --project-root sample-project/checkout-service \
+            --output-dir dashboard/data \
+            --repo "$REPO" \
+            --token "$GITHUB_TOKEN" \
+            --run-id "$RUN_ID" \
+            --sha "$SHA" \
+            --branch "$BRANCH"
+
+      - name: Commit updated dashboard data
+        if: github.event_name == 'push'
+        run: |
+          git config user.name "ThreatLoop Bot"
+          git config user.email "threatloop-bot@github.com"
+          git add dashboard/data/
+          git diff --staged --quiet || git commit -m "chore(threatloop): update dashboard data [run-$GITHUB_RUN_NUMBER]"
+          git push
+
+      - name: Print summary
+        if: always()
+        run: |
+          echo "## ThreatLoop Scan Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -f dashboard/data/threats.json ]; then
+            echo "Dashboard data updated successfully." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ No dashboard data generated." >> $GITHUB_STEP_SUMMARY
+          fi

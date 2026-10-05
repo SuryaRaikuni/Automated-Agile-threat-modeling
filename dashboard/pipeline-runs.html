@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Pipeline Runs - ThreatLoop</title>
+  <link rel="stylesheet" href="./assets/theme.css">
+</head>
+<body>
+  <div class="layout">
+    <div class="sidebar">
+      <div class="logo">ThreatLoop</div>
+      <nav>
+        <a href="index.html">Dashboard</a>
+        <a href="dfd-viewer.html">DFD Viewer</a>
+        <a href="backlog.html">Backlog Sync</a>
+        <a href="pipeline-runs.html" class="active">Pipeline Runs</a>
+        <a href="settings.html">Settings</a>
+      </nav>
+    </div>
+    <div class="main-wrapper">
+      <div class="topbar" id="shared-topbar"></div>
+      <div class="main-content">
+        <h2 style="margin-bottom: 24px;">Pipeline Run History</h2>
+        
+        <div class="card" style="margin-bottom: 24px;">
+          <h3 style="margin-bottom: 16px;">New Threats per Run</h3>
+          <div class="chart-container" style="height: 250px;">
+            <canvas id="runsChart"></canvas>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="overflow-x:auto;">
+            <table class="tl-table">
+              <thead>
+                <tr>
+                  <th>SHA</th>
+                  <th>Branch</th>
+                  <th>Triggered</th>
+                  <th>Duration</th>
+                  <th>New Threats</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="runs-tb"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="./assets/app.js"></script>
+  <script>
+    document.addEventListener('tl-data-ready', () => {
+      window.renderSharedTopbar();
+      const runs = window.TLData.runs;
+      
+      const tb = document.getElementById('runs-tb');
+      if(runs.length === 0) {
+        tb.innerHTML = '<tr><td colspan="6">No pipeline runs found.</td></tr>';
+      } else {
+        tb.innerHTML = runs.map(r => {
+          let durationStr = r.durationMs ? Math.floor(r.durationMs / 1000) + 's' : '-';
+          return `
+            <tr>
+              <td class="mono">${window.escapeHtml(r.sha || r.runId)}</td>
+              <td><span class="badge badge-info" style="background:var(--border);color:var(--text);border:none;">${window.escapeHtml(r.branch || 'main')}</span></td>
+              <td>${window.formatDate(r.timestamp)}</td>
+              <td>${durationStr}</td>
+              <td>${r.newThreatCount}</td>
+              <td>${window.formatStatus(r.status)}</td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      const ctx = document.getElementById('runsChart').getContext('2d');
+      const reversedRuns = [...runs].reverse();
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: reversedRuns.map(r => r.runId),
+          datasets: [{
+            label: 'New Threats',
+            data: reversedRuns.map(r => r.newThreatCount),
+            backgroundColor: reversedRuns.map(r => r.status === 'SUCCESS' ? '#2FBF8F' : '#E63946')
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+      });
+    });
+  </script>
+</body>
+</html>

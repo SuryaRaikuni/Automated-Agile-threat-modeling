@@ -1,0 +1,26 @@
+# Maven
+target/
+*.class
+*.jar
+!pipeline/target/threatloop-pipeline-*-jar-with-dependencies.jar
+
+# IDE
+.idea/
+*.iml
+.eclipse/
+.settings/
+.classpath
+.project
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Secrets
+.env
+*.env.local
+
+# Sample project build
+sample-project/**/target/
