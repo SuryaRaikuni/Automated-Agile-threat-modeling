@@ -1,13 +1,19 @@
 {
-  "runs": [
-    {
-      "runId": "run-001",
-      "sha": "a1b2c3d",
-      "branch": "main",
-      "timestamp": "2026-09-17T17:45:00Z",
-      "durationMs": 45320,
-      "newThreatCount": 5,
-      "status": "SUCCESS"
-    }
-  ]
+  "runs" : [ {
+    "runId" : "run-001",
+    "sha" : "a1b2c3d",
+    "branch" : "main",
+    "timestamp" : "2026-09-17T17:45:00Z",
+    "durationMs" : 45320,
+    "newThreatCount" : 5,
+    "status" : "SUCCESS"
+  }, {
+    "runId" : "run-1",
+    "sha" : "71d58e04917446e14cc27e5180e2321d187c1ad1",
+    "branch" : "main",
+    "timestamp" : "2026-10-05T17:08:25.424675313Z",
+    "durationMs" : 4134,
+    "newThreatCount" : 6,
+    "status" : "SUCCESS"
+  } ]
 }
