@@ -1,0 +1,84 @@
+<mxfile host="app.diagrams.net" agent="claude" version="24.0.0">
+  <diagram name="High-Level Architecture" id="arch-page-1">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1000" pageHeight="820" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Nodes -->
+        <mxCell id="n1" value="Developer / Git Repository&#10;(GitHub)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1E2761;strokeColor=none;fontColor=#FFFFFF;fontSize=13;fontStyle=1;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="365" y="30" width="270" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="n2" value="CI/CD Orchestrator&#10;(GitHub Actions)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1E2761;strokeColor=none;fontColor=#FFFFFF;fontSize=13;fontStyle=1;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="365" y="160" width="270" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="n3" value="DFD Extractor" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1E2761;strokeColor=none;fontColor=#FFFFFF;fontSize=13;fontStyle=1;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="140" y="290" width="220" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="n4" value="STRIDE Rule Engine" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1E2761;strokeColor=none;fontColor=#FFFFFF;fontSize=13;fontStyle=1;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="140" y="410" width="220" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="n5" value="Diff &amp; Ticket Generator" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1E2761;strokeColor=none;fontColor=#FFFFFF;fontSize=13;fontStyle=1;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="140" y="530" width="220" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="n6" value="GitHub Issues /&#10;Product Backlog" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1E2761;strokeColor=none;fontColor=#FFFFFF;fontSize=13;fontStyle=1;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="140" y="650" width="220" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="n7" value="Threat Dashboard&#10;(Web UI)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E63946;strokeColor=none;fontColor=#FFFFFF;fontSize=13;fontStyle=1;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="680" y="400" width="240" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- Pipeline edges (solid, accent) -->
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#E63946;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="n1" target="n2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e1label" value="push / PR" style="text;html=1;align=center;fontSize=10;fontColor=#5B6B8C;" vertex="1" parent="1">
+          <mxGeometry x="500" y="115" width="80" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#E63946;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="n2" target="n3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#E63946;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="n3" target="n4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#E63946;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="n4" target="n5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#E63946;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="n5" target="n6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Read / observability edges (dashed, muted) -->
+        <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#5B6B8C;strokeWidth=1.5;dashed=1;endArrow=open;exitX=1;exitY=0.5;entryX=0;entryY=0.7;" edge="1" parent="1" source="n6" target="n7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#5B6B8C;strokeWidth=1.5;dashed=1;endArrow=open;exitX=1;exitY=0.5;entryX=0;entryY=0.4;" edge="1" parent="1" source="n4" target="n7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#5B6B8C;strokeWidth=1.5;dashed=1;endArrow=open;exitX=1;exitY=0.5;entryX=0;entryY=0.15;" edge="1" parent="1" source="n2" target="n7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend1" value="Solid = pipeline (write) flow" style="text;html=1;align=left;fontSize=11;fontColor=#E63946;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="680" y="530" width="240" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend2" value="Dashed = dashboard (read-only) flow" style="text;html=1;align=left;fontSize=11;fontColor=#5B6B8C;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="680" y="555" width="260" height="20" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
