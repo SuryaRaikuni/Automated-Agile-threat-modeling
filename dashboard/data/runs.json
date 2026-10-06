@@ -15,5 +15,13 @@
     "durationMs" : 4134,
     "newThreatCount" : 6,
     "status" : "SUCCESS"
+  }, {
+    "runId" : "run-2",
+    "sha" : "9a98249bcd4938cfe6806c596fc8d913a5b3c481",
+    "branch" : "main",
+    "timestamp" : "2026-10-06T17:34:53.649791835Z",
+    "durationMs" : 379,
+    "newThreatCount" : 0,
+    "status" : "SUCCESS"
   } ]
 }
